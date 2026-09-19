@@ -31,10 +31,15 @@ jobs:
           cp -r css js images _site/
           touch _site/.nojekyll
 
+      # Note: do NOT add `enablement: true` here. It calls POST /repos/{owner}/{repo}/pages
+      # to create the Pages site, which requires `administration: write` — a permission the
+      # workflow GITHUB_TOKEN can never be granted, so it always fails with
+      # "Resource not accessible by integration" (see actions/configure-pages#40).
+      # Instead, a repo admin must enable Pages ONCE:
+      #   Settings -> Pages -> Build and deployment -> Source: "GitHub Actions"
+      # After that, configure-pages reads the existing site config and every deploy is automatic.
       - name: Setup Pages
         uses: actions/configure-pages@v5
-        with:
-          enablement: true
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3

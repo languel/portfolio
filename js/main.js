@@ -18,6 +18,7 @@
   const header = document.querySelector(".site-header");
   const homeLink = document.querySelector(".wordmark");
   const aboutLink = document.querySelector('.site-nav__link[href="#about"]');
+  const themeToggle = document.querySelector("[data-theme-toggle]");
 
   if (
     !main ||
@@ -43,6 +44,20 @@
 
   let activeIndex = 0;
   const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+
+  const setTheme = (theme) => {
+    const isLight = theme === "light";
+    document.documentElement.dataset.theme = isLight ? "light" : "dark";
+
+    if (themeToggle) {
+      themeToggle.textContent = isLight ? "Dark mode" : "Light mode";
+      themeToggle.setAttribute("aria-pressed", String(isLight));
+      themeToggle.setAttribute("aria-label", isLight ? "Switch to dark mode" : "Switch to light mode");
+    }
+
+    document.querySelector('meta[name="theme-color"]')?.setAttribute("content", isLight ? "#f2f1ed" : "#151515");
+    window.localStorage.setItem("portfolio-theme", isLight ? "light" : "dark");
+  };
 
   const scrollToTop = () => {
     window.scrollTo({
@@ -211,6 +226,11 @@
     showAbout();
   });
 
+  themeToggle?.addEventListener("click", () => {
+    setTheme(document.documentElement.dataset.theme === "light" ? "dark" : "light");
+  });
+
+  setTheme(window.localStorage.getItem("portfolio-theme") || "dark");
   renderProject(0, { center: false });
   showGrid();
 })();

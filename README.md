@@ -1,27 +1,22 @@
-# Languel
+# Languel — Digital Artist Portfolio
 
-A minimal studio site for painter **Inês Languel** — selected works, a short biography, and contact.
+A minimalist, desaturated dark-themed portfolio for a digital artist showcasing generative bitmap pixel art, procedural shaders, and computational geometry.
 
-Live: [languel.github.io/portfolio](https://languel.github.io/portfolio/)
+## Key Features
 
-Pushes to `main` publish automatically via GitHub Pages (`.github/workflows/pages.yml`).
+- **Front-page Grid of Projects**: Direct presentation of work in a responsive card grid with no unnecessary hero clutter.
+- **Minimal Top Navigation**: Sticky header with wordmark, real-time availability indicator, works counter, and modal triggers for About and Contact.
+- **Interactive Card Hover State**: Smooth darkening overlay reveals project index, title, medium, palette, and click-to-expand prompt.
+- **Expanded Detail View**: Accessible dialog with large pixel-rendered artwork viewer, 2× zoom toggle, technical specifications table, artist statement, tags, and keyboard navigation (`←` / `→` or `K` / `J`, `ESC` to close).
+- **Dark & Desaturated Monochrome Aesthetic**: Deep obsidian background with subtle dot-matrix substrate, slate borders, and grayscale palette to make the digital artwork stand out.
+- **12 Bitmap Pixel Art Placeholders**: Procedurally generated 8-bit/16-bit dithered artworks (Monolith, Megacity Spire, Deep Space Relay, Microcode Lattice, Celestial Eclipse, Neural Visor, Mineral Resonance, Wireframe Horizon, Torus Knot, Signal Waveform, Titan Mech Rig, Arcane Glyph) rendered with `image-rendering: pixelated;`.
+- **Category Filtering**: Instant client-side filtering by category (All, Shaders, Bitmap, Generative, Vector).
+- **Direct Hash Linking**: Deep links support (`#project-1` ... `#project-12`).
 
-## Deploying
-
-One-time setup (repo admin only): open
-[Settings → Pages](https://github.com/languel/portfolio/settings/pages) and set
-**Build and deployment → Source** to **GitHub Actions**, then click **Save**.
-
-GitHub does not allow a workflow's `GITHUB_TOKEN` to create the Pages site itself
-(the create-site API needs `administration: write`, which cannot be granted to
-`GITHUB_TOKEN`), so this switch has to be flipped once by hand. After that, every
-push to `main` deploys automatically, and the workflow can also be triggered
-manually (**Actions → Deploy GitHub Pages → Run workflow**).
-
-## Run locally
+## Run Locally
 
 ```bash
-python3 -m http.server 8080
+python3 -m http.server 8080 --bind 0.0.0.0
 ```
 
-Then open [http://localhost:8080](http://localhost:8080).
+Then visit [http://localhost:8080](http://localhost:8080) in your browser.

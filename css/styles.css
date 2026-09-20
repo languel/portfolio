@@ -48,6 +48,7 @@ html {
   line-height: 1.5;
   scroll-behavior: smooth;
   background: var(--bg);
+  overflow-x: hidden;
   scrollbar-color: var(--line-strong) var(--bg);
   scrollbar-width: thin;
 }
@@ -58,6 +59,7 @@ body {
   min-height: 100vh;
   min-width: 320px;
   margin: 0;
+  overflow-x: hidden;
   color: var(--text);
   background: var(--bg);
   font-family: var(--sans);
@@ -379,8 +381,11 @@ main {
   right: calc(var(--header-height) + var(--pad));
   left: calc(var(--header-height) + var(--pad));
   height: var(--header-height);
+  overflow: hidden;
   padding: 0;
   border-bottom: 0;
+  contain: layout paint;
+  overscroll-behavior: none;
 }
 
 .site-header[data-view="detail"] ~ main .thumbnail-track {
@@ -408,9 +413,13 @@ main {
 .thumbnail-viewport {
   min-width: 0;
   overflow-x: auto;
+  overflow-y: hidden;
   overscroll-behavior-inline: contain;
+  overscroll-behavior-x: contain;
+  overscroll-behavior-y: none;
   scrollbar-color: var(--line-strong) transparent;
   scrollbar-width: thin;
+  touch-action: pan-x;
 }
 
 .thumbnail-track {

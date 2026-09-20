@@ -1,6 +1,8 @@
-# Languel
+# Portfolio
 
-A minimal studio site for painter **Inês Languel** — selected works, a short biography, and contact.
+A minimal, dark portfolio shell for a digital artist. The `contenttest` branch
+opens on a twelve-project monochrome grid; selecting a project rearranges the
+same page into a large project view with a horizontal thumbnail carousel.
 
 Live: [languel.github.io/portfolio](https://languel.github.io/portfolio/)
 

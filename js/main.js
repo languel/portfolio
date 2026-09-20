@@ -1,71 +1,216 @@
 (() => {
-  const header = document.querySelector("[data-header]");
-  const works = [...document.querySelectorAll("[data-work]")];
-  const dialog = document.querySelector(".lightbox");
-  const dialogImg = dialog.querySelector(".lightbox__img");
-  const dialogTitle = dialog.querySelector("#lb-title");
-  const dialogMeta = dialog.querySelector("#lb-meta");
-  const prevBtn = dialog.querySelector("[data-prev]");
-  const nextBtn = dialog.querySelector("[data-next]");
+  const main = document.querySelector("main");
+  const gridSection = document.querySelector(".portfolio-grid-view");
+  const grid = document.querySelector("[data-project-grid]");
+  const detailSection = document.querySelector("#project-detail");
+  const aboutSection = document.querySelector("#about");
+  const thumbnails = [...document.querySelectorAll("[data-project-thumb]")];
+  const previousButton = document.querySelector("[data-prev]");
+  const nextButton = document.querySelector("[data-next]");
+  const featureImage = document.querySelector("#feature-image");
+  const featureIndex = document.querySelector("#feature-index");
+  const featureTitle = document.querySelector("#feature-title");
+  const featureMeta = document.querySelector("#feature-meta");
+  const featureDescription = document.querySelector("#feature-description");
+  const featureMedium = document.querySelector("#feature-medium");
+  const featureYear = document.querySelector("#feature-year");
+  const featureSeries = document.querySelector("#feature-series");
+  const header = document.querySelector(".site-header");
+  const homeLink = document.querySelector(".wordmark");
+  const aboutLink = document.querySelector('.site-nav__link[href="#about"]');
 
-  let index = 0;
-
-  const onScroll = () => {
-    header.classList.toggle("is-scrolled", window.scrollY > 12);
-  };
-
-  onScroll();
-  window.addEventListener("scroll", onScroll, { passive: true });
-
-  if ("IntersectionObserver" in window) {
-    const io = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add("is-in");
-            io.unobserve(entry.target);
-          }
-        });
-      },
-      { threshold: 0.12, rootMargin: "0px 0px -8% 0px" }
-    );
-
-    document.querySelectorAll(".reveal").forEach((el) => io.observe(el));
-  } else {
-    document.querySelectorAll(".reveal").forEach((el) => el.classList.add("is-in"));
+  if (
+    !main ||
+    !gridSection ||
+    !grid ||
+    !detailSection ||
+    !aboutSection ||
+    !thumbnails.length ||
+    !previousButton ||
+    !nextButton ||
+    !featureImage ||
+    !featureIndex ||
+    !featureTitle ||
+    !featureMeta ||
+    !featureDescription ||
+    !featureMedium ||
+    !featureYear ||
+    !featureSeries ||
+    !header
+  ) {
+    return;
   }
 
-  const open = (i) => {
-    index = (i + works.length) % works.length;
-    const work = works[index];
-    const img = work.querySelector("img");
+  let activeIndex = 0;
+  const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
 
-    dialogImg.src = img.currentSrc || img.src;
-    dialogImg.alt = img.alt;
-    dialogTitle.textContent = work.dataset.title;
-    dialogMeta.textContent = work.dataset.meta;
-
-    if (!dialog.open) dialog.showModal();
+  const scrollToTop = () => {
+    window.scrollTo({
+      top: 0,
+      behavior: prefersReducedMotion.matches ? "auto" : "smooth",
+    });
   };
 
-  works.forEach((work, i) => {
-    work.querySelector(".work__hit").addEventListener("click", () => open(i));
+  const centerThumbnail = (thumbnail) => {
+    thumbnail.scrollIntoView({
+      behavior: prefersReducedMotion.matches ? "auto" : "smooth",
+      block: "nearest",
+      inline: "center",
+    });
+  };
+
+  const updateDocumentTitle = (title = "Portfolio") => {
+    document.title = title === "Portfolio" ? "Portfolio — Digital Artist" : `${title} — Portfolio`;
+  };
+
+  const renderProject = (index, { focus = false, center = true } = {}) => {
+    activeIndex = (index + thumbnails.length) % thumbnails.length;
+    const thumbnail = thumbnails[activeIndex];
+
+    thumbnails.forEach((item, itemIndex) => {
+      const isSelected = itemIndex === activeIndex;
+      item.setAttribute("aria-selected", String(isSelected));
+      item.tabIndex = isSelected ? 0 : -1;
+    });
+
+    featureImage.classList.add("is-changing");
+    featureImage.src = thumbnail.dataset.image;
+    featureImage.alt = thumbnail.dataset.alt;
+    featureIndex.textContent = thumbnail.dataset.title;
+    featureTitle.textContent = thumbnail.dataset.title;
+    featureMeta.textContent = thumbnail.dataset.meta;
+    featureDescription.textContent = thumbnail.dataset.description;
+    featureMedium.textContent = thumbnail.dataset.medium;
+    featureYear.textContent = thumbnail.dataset.year;
+    featureSeries.textContent = thumbnail.dataset.series;
+    updateDocumentTitle(thumbnail.dataset.title);
+
+    window.setTimeout(() => featureImage.classList.remove("is-changing"), 120);
+
+    if (center) centerThumbnail(thumbnail);
+    if (focus) thumbnail.focus();
+  };
+
+  const moveProject = (step, options) => renderProject(activeIndex + step, options);
+
+  const createGridCard = (thumbnail, index) => {
+    const card = document.createElement("article");
+    card.className = "project-grid-card";
+
+    const button = document.createElement("button");
+    button.className = "project-grid-card__trigger";
+    button.type = "button";
+    button.setAttribute("aria-label", `Open ${thumbnail.dataset.title}`);
+
+    const media = document.createElement("span");
+    media.className = "project-grid-card__media";
+
+    const image = document.createElement("img");
+    image.src = thumbnail.dataset.image;
+    image.alt = thumbnail.dataset.alt;
+    media.append(image);
+
+    const overlay = document.createElement("span");
+    overlay.className = "project-grid-card__overlay";
+    overlay.setAttribute("aria-hidden", "true");
+
+    const title = document.createElement("span");
+    title.className = "project-grid-card__title";
+    title.textContent = thumbnail.dataset.title;
+
+    const meta = document.createElement("span");
+    meta.className = "project-grid-card__meta";
+    meta.textContent = thumbnail.dataset.meta;
+
+    const action = document.createElement("span");
+    action.className = "project-grid-card__action";
+    action.innerHTML =
+      'View project <svg aria-hidden="true" viewBox="0 0 24 24" focusable="false"><path d="M4 12h15M13 5l7 7-7 7" /></svg>';
+
+    overlay.append(title, meta, action);
+    button.append(media, overlay);
+    button.addEventListener("click", () => showDetail(index));
+    card.append(button);
+
+    return card;
+  };
+
+  const showGrid = () => {
+    main.dataset.view = "grid";
+    header.dataset.view = "grid";
+    gridSection.hidden = false;
+    detailSection.hidden = true;
+    aboutSection.hidden = true;
+    updateDocumentTitle();
+    window.history.replaceState(null, "", "#work");
+    scrollToTop();
+  };
+
+  const showDetail = (index) => {
+    main.dataset.view = "detail";
+    header.dataset.view = "detail";
+    gridSection.hidden = true;
+    detailSection.hidden = false;
+    aboutSection.hidden = true;
+    renderProject(index, { center: false });
+    window.history.replaceState(null, "", "#project-detail");
+    scrollToTop();
+    thumbnails[activeIndex].focus();
+  };
+
+  const showAbout = () => {
+    main.dataset.view = "about";
+    header.dataset.view = "about";
+    gridSection.hidden = true;
+    detailSection.hidden = true;
+    aboutSection.hidden = false;
+    updateDocumentTitle("About");
+    window.history.replaceState(null, "", "#about");
+    scrollToTop();
+    document.querySelector("#about-title")?.focus({ preventScroll: true });
+  };
+
+  grid.append(...thumbnails.map(createGridCard));
+
+  thumbnails.forEach((thumbnail, index) => {
+    thumbnail.addEventListener("click", () => renderProject(index, { focus: true }));
+
+    thumbnail.addEventListener("keydown", (event) => {
+      if (event.key === "ArrowRight") {
+        event.preventDefault();
+        moveProject(1, { focus: true });
+      }
+
+      if (event.key === "ArrowLeft") {
+        event.preventDefault();
+        moveProject(-1, { focus: true });
+      }
+
+      if (event.key === "Home") {
+        event.preventDefault();
+        renderProject(0, { focus: true });
+      }
+
+      if (event.key === "End") {
+        event.preventDefault();
+        renderProject(thumbnails.length - 1, { focus: true });
+      }
+    });
   });
 
-  prevBtn.addEventListener("click", () => open(index - 1));
-  nextBtn.addEventListener("click", () => open(index + 1));
+  previousButton.addEventListener("click", () => moveProject(-1, { focus: true }));
+  nextButton.addEventListener("click", () => moveProject(1, { focus: true }));
 
-  dialog.addEventListener("click", (event) => {
-    if (event.target === dialog) dialog.close();
+  homeLink?.addEventListener("click", (event) => {
+    event.preventDefault();
+    showGrid();
   });
 
-  document.addEventListener("keydown", (event) => {
-    if (!dialog.open) return;
-    if (event.key === "ArrowLeft") open(index - 1);
-    if (event.key === "ArrowRight") open(index + 1);
+  aboutLink?.addEventListener("click", (event) => {
+    event.preventDefault();
+    showAbout();
   });
 
-  dialog.addEventListener("close", () => {
-    dialogImg.removeAttribute("src");
-  });
+  renderProject(0, { center: false });
+  showGrid();
 })();

@@ -683,26 +683,48 @@ main {
   justify-content: flex-end;
   width: min(calc(100% - (2 * var(--pad))), var(--max-width));
   margin: 0 auto;
-  padding: 1rem 0 1.25rem;
+  padding: var(--pad) 0;
 }
 
 .theme-toggle {
-  border: 1px solid var(--line);
-  padding: 0.45rem 0.65rem;
+  display: grid;
+  width: 1.35rem;
+  height: 1.35rem;
+  place-items: center;
+  border: 0;
+  padding: 0;
   color: var(--muted);
   background: transparent;
   cursor: pointer;
-  font-family: var(--mono);
-  font-size: 0.66rem;
-  letter-spacing: 0.04em;
-  transition: border-color 180ms ease, color 180ms ease, background 180ms ease;
+  transition: color 180ms ease, transform 180ms ease;
 }
 
 .theme-toggle:hover,
 .theme-toggle:focus-visible {
-  border-color: var(--line-strong);
   color: var(--text);
-  background: var(--surface-raised);
+  transform: scale(1.08);
+}
+
+.theme-toggle__icon {
+  width: 0.9rem;
+  height: 0.9rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.35;
+}
+
+.theme-toggle__icon--moon {
+  display: none;
+}
+
+:root[data-theme="light"] .theme-toggle__icon--sun {
+  display: none;
+}
+
+:root[data-theme="light"] .theme-toggle__icon--moon {
+  display: block;
 }
 
 @media (max-width: 1080px) {

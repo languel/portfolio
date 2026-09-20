@@ -50,7 +50,6 @@
     document.documentElement.dataset.theme = isLight ? "light" : "dark";
 
     if (themeToggle) {
-      themeToggle.textContent = isLight ? "Dark mode" : "Light mode";
       themeToggle.setAttribute("aria-pressed", String(isLight));
       themeToggle.setAttribute("aria-label", isLight ? "Switch to dark mode" : "Switch to light mode");
     }

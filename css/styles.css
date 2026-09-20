@@ -57,7 +57,8 @@ body {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  min-width: 320px;
+  width: 100%;
+  min-width: 0;
   margin: 0;
   overflow-x: hidden;
   color: var(--text);
@@ -380,6 +381,8 @@ main {
   top: 0;
   right: calc(var(--header-height) + var(--pad));
   left: calc(var(--header-height) + var(--pad));
+  width: auto;
+  max-width: calc(100vw - (2 * (var(--header-height) + var(--pad))));
   height: var(--header-height);
   overflow: hidden;
   padding: 0;
@@ -411,12 +414,16 @@ main {
 }
 
 .thumbnail-viewport {
+  width: 100%;
+  max-width: 100%;
   min-width: 0;
   overflow-x: auto;
   overflow-y: hidden;
-  overscroll-behavior-inline: contain;
-  overscroll-behavior-x: contain;
+  overscroll-behavior: none;
+  overscroll-behavior-inline: none;
+  overscroll-behavior-x: none;
   overscroll-behavior-y: none;
+  -webkit-overflow-scrolling: auto;
   scrollbar-color: var(--line-strong) transparent;
   scrollbar-width: thin;
   touch-action: pan-x;

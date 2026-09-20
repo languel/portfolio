@@ -4,6 +4,7 @@
   const grid = document.querySelector("[data-project-grid]");
   const detailSection = document.querySelector("#project-detail");
   const aboutSection = document.querySelector("#about");
+  const thumbnailViewport = document.querySelector(".thumbnail-viewport");
   const thumbnails = [...document.querySelectorAll("[data-project-thumb]")];
   const previousButton = document.querySelector("[data-prev]");
   const nextButton = document.querySelector("[data-next]");
@@ -71,6 +72,17 @@
       block: "nearest",
       inline: "center",
     });
+  };
+
+  const clampThumbnailScroll = () => {
+    if (!thumbnailViewport) return;
+
+    const maxScroll = Math.max(0, thumbnailViewport.scrollWidth - thumbnailViewport.clientWidth);
+    const clampedScroll = Math.min(maxScroll, Math.max(0, thumbnailViewport.scrollLeft));
+
+    if (clampedScroll !== thumbnailViewport.scrollLeft) {
+      thumbnailViewport.scrollLeft = clampedScroll;
+    }
   };
 
   const updateDocumentTitle = (title = "Portfolio") => {
@@ -185,6 +197,9 @@
   };
 
   grid.append(...thumbnails.map(createGridCard));
+
+  thumbnailViewport?.addEventListener("scroll", clampThumbnailScroll, { passive: true });
+  window.addEventListener("resize", clampThumbnailScroll);
 
   thumbnails.forEach((thumbnail, index) => {
     thumbnail.addEventListener("click", () => renderProject(index, { focus: true }));

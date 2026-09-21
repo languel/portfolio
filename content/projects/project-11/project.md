@@ -24,4 +24,6 @@ text here so the markdown remains portable between editors.
 }
 ```
 
+![Rendered LilyPond score](media/lilypond-score.svg)
+
 See the [LilyPond HTML usage guide](https://lilypond.org/doc/v2.23/Documentation/usage/html) for the markup workflow.

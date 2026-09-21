@@ -264,9 +264,9 @@
         }
         fragment.append(link);
       } else {
-        const math = document.createElement("code");
+        const math = document.createElement("span");
         math.className = "project-inline-math";
-        math.textContent = token[5];
+        math.textContent = `\\(${token[5]}\\)`;
         fragment.append(math);
       }
 
@@ -337,6 +337,17 @@
     flushParagraph();
   };
 
+  const renderMath = (container) => {
+    if (typeof window.renderMathInElement !== "function") return;
+    window.renderMathInElement(container, {
+      delimiters: [
+        { left: "\\(", right: "\\)", display: false },
+        { left: "\\[", right: "\\]", display: true },
+      ],
+      throwOnError: false,
+    });
+  };
+
   const renderEmbed = (project) => {
     featureEmbed.replaceChildren();
     if (!project.embed) return;
@@ -381,6 +392,7 @@
     featureYear.textContent = project.year;
     featureSeries.textContent = project.series;
     renderMarkdown(project.body, featureBody, project.directory);
+    renderMath(featureBody);
     renderEmbed(project);
     renderGallery(project);
     updateDocumentTitle(project.title);

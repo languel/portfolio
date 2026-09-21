@@ -54,7 +54,10 @@ fenced code blocks. An `embed` URL or local HTML file renders below the prose,
 so a project can demonstrate a p5.js sketch or a live Strudel REPL without
 changing the application code. Relative download links (for example a `.zip`)
 are served from the project folder, which makes self-contained examples easy
-to share with students.
+to share with students. Inline `\(...\)` and display `\[...\]` math is rendered
+with KaTeX when the CDN is available, while the source remains readable as a
+fallback. LilyPond source stays visible in its fenced block and can be paired
+with a rendered SVG score preview in the same project folder.
 
 Add the project markdown path to `content/projects.json` to include a new
 project and control its order.

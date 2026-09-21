@@ -13,6 +13,7 @@
   --card-overlay: rgba(10, 10, 10, 0.76);
   --pad: 3px;
   --header-height: clamp(2.35rem, 4vw, 3.6rem);
+  --detail-content-max: 48rem;
   --max-width: 1440px;
   --ease: cubic-bezier(0.22, 1, 0.36, 1);
   --sans: "Helvetica Neue", Helvetica, Arial, sans-serif;
@@ -137,12 +138,15 @@ img {
 }
 
 .site-header {
-  position: sticky;
+  position: fixed;
+  inset: 0 0 auto;
   top: 0;
   z-index: 20;
   display: flex;
   align-items: center;
   justify-content: space-between;
+  width: 100%;
+  height: var(--header-height);
   min-height: var(--header-height);
   padding: 0 var(--pad);
   border-bottom: 1px solid var(--line);
@@ -260,6 +264,7 @@ img {
 
 main {
   flex: 1 0 auto;
+  padding-top: var(--header-height);
 }
 
 .portfolio-grid-view[hidden],
@@ -627,7 +632,8 @@ main {
 }
 
 .project-feature__body {
-  max-width: 48rem;
+  width: 100%;
+  max-width: var(--detail-content-max);
   padding: clamp(1.6rem, 4vw, 3rem) 0 0;
   color: var(--copy);
 }
@@ -673,25 +679,34 @@ main {
 
 .project-feature__body .project-body-image {
   display: block;
-  width: min(100%, 36rem);
+  width: 100%;
+  max-width: 100%;
   margin: 1.2rem 0;
   border: 1px solid var(--line);
 }
 
 .project-inline-math {
+  display: inline-block;
   color: var(--text);
   font-family: var(--mono);
-  font-size: 0.86em;
+  font-size: 0.9em;
+}
+
+.project-inline-math .katex,
+.project-feature__body .katex {
+  color: var(--text);
+  font-size: 1.05em;
 }
 
 .project-feature__embed {
   width: 100%;
+  max-width: var(--detail-content-max);
   margin-top: clamp(1.6rem, 4vw, 3rem);
 }
 
 .project-feature__embed iframe {
   display: block;
-  width: min(100%, 42rem);
+  width: 100%;
   height: min(52vw, 24rem);
   min-height: 16rem;
   border: 1px solid var(--line);
@@ -701,6 +716,8 @@ main {
 .project-feature__gallery {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
+  width: 100%;
+  max-width: var(--detail-content-max);
   gap: 3px;
   margin-top: clamp(1.6rem, 4vw, 3rem);
 }

@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 260" role="img" aria-labelledby="title desc">
+  <title id="title">Rendered LilyPond score preview</title>
+  <desc id="desc">A short four-four melody on a five-line musical staff.</desc>
+  <rect width="960" height="260" fill="#151515"/>
+  <g fill="none" stroke="#e8e6e0" stroke-width="2">
+    <path d="M60 86H900M60 104H900M60 122H900M60 140H900M60 158H900"/>
+    <path d="M60 80V164M286 80V164M512 80V164M738 80V164M900 80V164"/>
+  </g>
+  <g fill="#e8e6e0" stroke="#e8e6e0" stroke-width="3">
+    <ellipse cx="144" cy="140" rx="13" ry="9" transform="rotate(-18 144 140)"/>
+    <path d="M156 140V58"/>
+    <ellipse cx="212" cy="122" rx="13" ry="9" transform="rotate(-18 212 122)"/>
+    <path d="M224 122V40"/>
+    <ellipse cx="356" cy="104" rx="13" ry="9" transform="rotate(-18 356 104)"/>
+    <path d="M368 104V22"/>
+    <ellipse cx="424" cy="122" rx="13" ry="9" transform="rotate(-18 424 122)"/>
+    <path d="M436 122V40"/>
+    <ellipse cx="580" cy="140" rx="13" ry="9" transform="rotate(-18 580 140)"/>
+    <path d="M592 140V58"/>
+    <ellipse cx="648" cy="122" rx="13" ry="9" transform="rotate(-18 648 122)"/>
+    <path d="M660 122V40"/>
+    <ellipse cx="792" cy="104" rx="13" ry="9" transform="rotate(-18 792 104)"/>
+    <path d="M804 104V22"/>
+    <ellipse cx="860" cy="122" rx="13" ry="9" transform="rotate(-18 860 122)"/>
+    <path d="M872 122V40"/>
+  </g>
+  <g fill="#e8e6e0" font-family="SFMono-Regular,Consolas,monospace" font-size="14" letter-spacing="2">
+    <text x="60" y="205">C   E   G   E       D   F   A   F</text>
+  </g>
+</svg>

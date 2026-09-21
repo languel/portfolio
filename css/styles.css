@@ -10,6 +10,7 @@
   --copy: #c5c2bc;
   --subtle: #b7b4ae;
   --art-bg: #101010;
+  --card-overlay: rgba(10, 10, 10, 0.76);
   --pad: 3px;
   --header-height: clamp(2.35rem, 4vw, 3.6rem);
   --max-width: 1440px;
@@ -30,6 +31,7 @@
   --copy: #45443f;
   --subtle: #5d5b55;
   --art-bg: #101010;
+  --card-overlay: rgba(255, 255, 255, 0.82);
 }
 
 *,
@@ -333,7 +335,7 @@ main {
   gap: 0.2rem;
   padding: clamp(0.75rem, 1.7vw, 1.4rem);
   color: var(--text);
-  background: rgba(10, 10, 10, 0.76);
+  background: var(--card-overlay);
   opacity: 0;
   transition: opacity 220ms ease;
 }

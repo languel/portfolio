@@ -212,15 +212,19 @@
   thumbnailViewport?.addEventListener("scroll", clampThumbnailScroll, { passive: true });
   window.addEventListener("resize", clampThumbnailScroll);
 
-  thumbnailViewport?.addEventListener(
+  window.addEventListener(
     "wheel",
     (event) => {
+      if (header.dataset.view !== "detail") return;
       if (Math.abs(event.deltaX) <= Math.abs(event.deltaY) || !event.deltaX) return;
 
       event.preventDefault();
-      setThumbnailScroll(thumbnailViewport.scrollLeft + event.deltaX);
+
+      if (thumbnailViewport?.contains(event.target)) {
+        setThumbnailScroll(thumbnailViewport.scrollLeft + event.deltaX);
+      }
     },
-    { passive: false },
+    { capture: true, passive: false },
   );
 
   let thumbnailDrag;

@@ -166,14 +166,6 @@
       ? asArray(fields.media || entry.media).map((source) => new URL(source, projectDirectory).href)
       : asArray(entry.media).map((source) => new URL(source, catalogDirectory).href);
 
-    if (entry.bodyFile) {
-      const bodyUrl = new URL(entry.bodyFile, catalogDirectory);
-      const bodyResponse = await fetch(bodyUrl);
-      if (!bodyResponse.ok) throw new Error(`Unable to load ${entry.bodyFile}`);
-      body = parseFrontMatter(await bodyResponse.text()).body;
-      bodyDirectory = new URL(".", bodyUrl);
-    }
-
     return {
       ...fields,
       body,

@@ -20,9 +20,8 @@ markdown and catalog files):
 python3 -m http.server 8080 --bind 0.0.0.0
 ```
 
-Visit [http://localhost:8080](http://localhost:8080) and open Project 1. This project displays this
-README below its image, so students can use it as an in-site orientation page
-while they customize the template.
+Visit [http://localhost:8080](http://localhost:8080) and open Project 1 for a
+short in-site orientation page while you customize the template.
 
 ## Adapt it to a class or assignment
 
@@ -65,8 +64,8 @@ folder so each student submission stays portable.
 
 Once the class has its own projects, delete unused project folders and remove
 their entries from `content/projects.json`. Project 1 is intentionally retained
-as the template guide; point its `bodyFile` at another guide or remove that
-field when the class no longer needs it.
+as the template guide; replace its instructions when the class needs a more
+specific workflow.
 
 ### 4. Publish
 

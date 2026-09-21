@@ -23,7 +23,27 @@ title, description, metadata, and media path, then add the project to
 The first media item becomes the grid card and large image. Additional media
 items appear in the project gallery.
 
-## Run it locally
+## Publish with GitHub Pages
+
+The repository already includes `.github/workflows/pages.yml`, which deploys
+the portfolio automatically whenever `main` changes.
+
+### 1. Push the folder
+
+Push the folder to a GitHub repository.
+
+### 2. Turn on Pages
+
+Open **Settings → Pages** and set **Source** to **GitHub Actions**.
+
+### 3. Deploy updates
+
+Push to `main` (or start the workflow from the **Actions** tab).
+
+GitHub will show the live portfolio URL after the workflow completes. Future
+pushes to `main` publish updates automatically.
+
+## Run it locally (optional)
 
 Serve the folder from a local web server, then open the site in a browser:
 
@@ -31,8 +51,8 @@ Serve the folder from a local web server, then open the site in a browser:
 python3 -m http.server 8080 --bind 0.0.0.0
 ```
 
-Visit <http://localhost:8080> to check the result. A server is needed because
-the portfolio loads the catalog and markdown files at runtime.
+Visit <http://localhost:8080> to check the result during development. A server
+is needed because the portfolio loads the catalog and markdown files at runtime.
 
 ## Make it yours
 

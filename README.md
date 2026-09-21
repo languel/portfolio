@@ -11,7 +11,20 @@ catalog and markdown files, then lays the work out as a responsive grid.
 Replace the sample files in `content/projects/` with your own work, then edit
 `content/projects.json` to set the order and number of projects.
 
-### 2. Run it locally
+### 2. Publish with GitHub Pages
+
+The included `.github/workflows/pages.yml` deploys the site automatically on
+every push to `main`.
+
+1. Push this folder to a GitHub repository.
+2. In the repository, open **Settings → Pages**.
+3. Under **Build and deployment**, set **Source** to **GitHub Actions**.
+4. Push to `main` (or run the workflow from the **Actions** tab).
+
+After the workflow finishes, GitHub shows the live portfolio URL in the Pages
+settings and in the workflow summary. Future pushes to `main` update it.
+
+### 3. Run it locally (optional)
 
 Open the site through a local web server (the browser must be able to fetch the
 markdown and catalog files):
@@ -66,13 +79,6 @@ Once the class has its own projects, delete unused project folders and remove
 their entries from `content/projects.json`. Project 1 is intentionally retained
 as the template guide; replace its instructions when the class needs a more
 specific workflow.
-
-### 4. Publish
-
-This repository includes a GitHub Pages workflow in
-`.github/workflows/pages.yml`. Push the folder to a repository, enable Pages
-for the workflow, and share the resulting site URL. The project can also be
-hosted by any static file server.
 
 ## File map
 

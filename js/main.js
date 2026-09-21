@@ -66,23 +66,34 @@
     });
   };
 
+  const getThumbnailMaxScroll = () => {
+    if (!thumbnailViewport) return 0;
+    return Math.max(0, thumbnailViewport.scrollWidth - thumbnailViewport.clientWidth);
+  };
+
+  const setThumbnailScroll = (scrollLeft) => {
+    if (!thumbnailViewport) return;
+
+    const clampedScroll = Math.min(getThumbnailMaxScroll(), Math.max(0, scrollLeft));
+    thumbnailViewport.scrollLeft = clampedScroll;
+  };
+
   const centerThumbnail = (thumbnail) => {
-    thumbnail.scrollIntoView({
-      behavior: prefersReducedMotion.matches ? "auto" : "smooth",
-      block: "nearest",
-      inline: "center",
-    });
+    if (!thumbnailViewport) return;
+
+    const viewportRect = thumbnailViewport.getBoundingClientRect();
+    const thumbnailRect = thumbnail.getBoundingClientRect();
+    const centeredScroll =
+      thumbnailViewport.scrollLeft +
+      (thumbnailRect.left - viewportRect.left) -
+      (viewportRect.width - thumbnailRect.width) / 2;
+
+    setThumbnailScroll(centeredScroll);
   };
 
   const clampThumbnailScroll = () => {
     if (!thumbnailViewport) return;
-
-    const maxScroll = Math.max(0, thumbnailViewport.scrollWidth - thumbnailViewport.clientWidth);
-    const clampedScroll = Math.min(maxScroll, Math.max(0, thumbnailViewport.scrollLeft));
-
-    if (clampedScroll !== thumbnailViewport.scrollLeft) {
-      thumbnailViewport.scrollLeft = clampedScroll;
-    }
+    setThumbnailScroll(thumbnailViewport.scrollLeft);
   };
 
   const updateDocumentTitle = (title = "Portfolio") => {
@@ -178,10 +189,10 @@
     gridSection.hidden = true;
     detailSection.hidden = false;
     aboutSection.hidden = true;
-    renderProject(index, { center: false });
+    renderProject(index);
     window.history.replaceState(null, "", "#project-detail");
     scrollToTop();
-    thumbnails[activeIndex].focus();
+    thumbnails[activeIndex].focus({ preventScroll: true });
   };
 
   const showAbout = () => {
@@ -200,6 +211,71 @@
 
   thumbnailViewport?.addEventListener("scroll", clampThumbnailScroll, { passive: true });
   window.addEventListener("resize", clampThumbnailScroll);
+
+  thumbnailViewport?.addEventListener(
+    "wheel",
+    (event) => {
+      if (Math.abs(event.deltaX) <= Math.abs(event.deltaY) || !event.deltaX) return;
+
+      event.preventDefault();
+      setThumbnailScroll(thumbnailViewport.scrollLeft + event.deltaX);
+    },
+    { passive: false },
+  );
+
+  let thumbnailDrag;
+  let suppressThumbnailClick = false;
+
+  const finishThumbnailDrag = () => {
+    if (thumbnailDrag?.isDragging) {
+      suppressThumbnailClick = true;
+      window.setTimeout(() => {
+        suppressThumbnailClick = false;
+      }, 0);
+    }
+
+    thumbnailDrag = undefined;
+  };
+
+  thumbnailViewport?.addEventListener("pointerdown", (event) => {
+    if (event.pointerType === "mouse") return;
+
+    thumbnailDrag = {
+      pointerId: event.pointerId,
+      startX: event.clientX,
+      startY: event.clientY,
+      startScroll: thumbnailViewport.scrollLeft,
+      isDragging: false,
+    };
+  });
+
+  thumbnailViewport?.addEventListener("pointermove", (event) => {
+    if (!thumbnailDrag || event.pointerId !== thumbnailDrag.pointerId) return;
+
+    const deltaX = thumbnailDrag.startX - event.clientX;
+    const deltaY = thumbnailDrag.startY - event.clientY;
+
+    if (!thumbnailDrag.isDragging) {
+      if (Math.abs(deltaX) < 6 || Math.abs(deltaX) <= Math.abs(deltaY)) return;
+      thumbnailDrag.isDragging = true;
+    }
+
+    event.preventDefault();
+    setThumbnailScroll(thumbnailDrag.startScroll + deltaX);
+  });
+
+  thumbnailViewport?.addEventListener("pointerup", finishThumbnailDrag);
+  thumbnailViewport?.addEventListener("pointercancel", finishThumbnailDrag);
+  thumbnailViewport?.addEventListener(
+    "click",
+    (event) => {
+      if (!suppressThumbnailClick) return;
+      event.preventDefault();
+      event.stopPropagation();
+      suppressThumbnailClick = false;
+    },
+    true,
+  );
 
   thumbnails.forEach((thumbnail, index) => {
     thumbnail.addEventListener("click", () => renderProject(index, { focus: true }));

@@ -417,16 +417,17 @@ main {
   width: 100%;
   max-width: 100%;
   min-width: 0;
-  overflow-x: auto;
+  overflow-x: hidden;
   overflow-y: hidden;
   overscroll-behavior: none;
   overscroll-behavior-inline: none;
   overscroll-behavior-x: none;
   overscroll-behavior-y: none;
-  -webkit-overflow-scrolling: auto;
   scrollbar-color: var(--line-strong) transparent;
   scrollbar-width: thin;
-  touch-action: pan-x;
+  touch-action: pan-y;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 .thumbnail-track {

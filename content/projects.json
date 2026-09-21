@@ -1,0 +1,16 @@
+{
+  "projects": [
+    { "slug": "project-01", "markdown": "projects/project-01/project.md" },
+    { "slug": "project-02", "markdown": "projects/project-02/project.md" },
+    { "slug": "project-03", "markdown": "projects/project-03/project.md" },
+    { "slug": "project-04", "markdown": "projects/project-04/project.md" },
+    { "slug": "project-05", "markdown": "projects/project-05/project.md" },
+    { "slug": "project-06", "markdown": "projects/project-06/project.md" },
+    { "slug": "project-07", "markdown": "projects/project-07/project.md" },
+    { "slug": "project-08", "markdown": "projects/project-08/project.md" },
+    { "slug": "project-09", "markdown": "projects/project-09/project.md" },
+    { "slug": "project-10", "markdown": "projects/project-10/project.md" },
+    { "slug": "project-11", "markdown": "projects/project-11/project.md" },
+    { "slug": "project-12", "markdown": "projects/project-12/project.md" }
+  ]
+}

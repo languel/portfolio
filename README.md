@@ -1,24 +1,64 @@
 # Portfolio
 
-A minimal, dark portfolio shell for a digital artist. The `contenttest` branch
-opens on a twelve-project monochrome grid; selecting a project rearranges the
-same page into a large project view with a horizontal thumbnail carousel.
+A small, static portfolio viewer for a digital artist. The front page is a
+responsive grid; selecting a project rearranges the same document into the
+detail view and thumbnail rail.
 
-## Key Features
+## Content model
 
-- **Front-page Grid of Projects**: Direct presentation of work in a responsive card grid with no unnecessary hero clutter.
-- **Minimal Top Navigation**: Sticky header with wordmark, real-time availability indicator, works counter, and modal triggers for About and Contact.
-- **Interactive Card Hover State**: Smooth darkening overlay reveals project index, title, medium, palette, and click-to-expand prompt.
-- **Expanded Detail View**: Accessible dialog with large pixel-rendered artwork viewer, 2× zoom toggle, technical specifications table, artist statement, tags, and keyboard navigation (`←` / `→` or `K` / `J`, `ESC` to close).
-- **Dark & Desaturated Monochrome Aesthetic**: Deep obsidian background with subtle dot-matrix substrate, slate borders, and grayscale palette to make the digital artwork stand out.
-- **12 Bitmap Pixel Art Placeholders**: Procedurally generated 8-bit/16-bit dithered artworks (Monolith, Megacity Spire, Deep Space Relay, Microcode Lattice, Celestial Eclipse, Neural Visor, Mineral Resonance, Wireframe Horizon, Torus Knot, Signal Waveform, Titan Mech Rig, Arcane Glyph) rendered with `image-rendering: pixelated;`.
-- **Category Filtering**: Instant client-side filtering by category (All, Shaders, Bitmap, Generative, Vector).
-- **Direct Hash Linking**: Deep links support (`#project-1` ... `#project-12`).
+Project content lives in `content/projects/`. Each project is a self-contained
+folder:
 
-## Run Locally
+```text
+content/
+  projects.json                 # display order and markdown entry points
+  projects/
+    project-01/
+      project.md                # Obsidian-style frontmatter + description
+      media/
+        project-01.png
+```
+
+`project.md` uses a small YAML frontmatter block. The body becomes the project
+description, so the prose can stay readable in Obsidian:
+
+```md
+---
+title: Project 01
+index: 01
+meta: Digital study · 2026
+medium: Bitmap / 1-bit
+year: 2026
+series: Thresholds
+media: media/project-01.png
+alt: Pixel-art doorway and figure in grayscale
+---
+A study of figures moving through an impossible threshold.
+```
+
+The `media` field may be a single image/video path, an inline list such as
+`[media/a.png, media/b.png]`, or a YAML list. The viewer currently presents the
+first item as the card and detail media; video files use native playback
+controls in the detail view. Add the project markdown path to
+`content/projects.json` to include a new project and control its order.
+
+For a one-off image or video that needs no written metadata, a catalog entry
+can point directly at the media file instead of a markdown file:
+
+```json
+{ "slug": "gesture-study", "media": "projects/gesture-study/media/study.mp4" }
+```
+
+## Run locally
 
 ```bash
 python3 -m http.server 8080 --bind 0.0.0.0
 ```
 
-Then visit [http://localhost:8080](http://localhost:8080) in your browser.
+Then visit [http://localhost:8080](http://localhost:8080). A static server is
+required because the viewer fetches markdown and catalog JSON at runtime.
+
+## Release checkpoint
+
+`v1.0.0-grid-baseline` tags the stable visual grid before the content-folder
+migration.

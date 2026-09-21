@@ -5,10 +5,10 @@
   const detailSection = document.querySelector("#project-detail");
   const aboutSection = document.querySelector("#about");
   const thumbnailViewport = document.querySelector(".thumbnail-viewport");
-  const thumbnails = [...document.querySelectorAll("[data-project-thumb]")];
+  const thumbnailTrack = document.querySelector(".thumbnail-track");
   const previousButton = document.querySelector("[data-prev]");
   const nextButton = document.querySelector("[data-next]");
-  const featureImage = document.querySelector("#feature-image");
+  const featureMedia = document.querySelector("#feature-media");
   const featureIndex = document.querySelector("#feature-index");
   const featureTitle = document.querySelector("#feature-title");
   const featureMeta = document.querySelector("#feature-meta");
@@ -27,10 +27,11 @@
     !grid ||
     !detailSection ||
     !aboutSection ||
-    !thumbnails.length ||
+    !thumbnailViewport ||
+    !thumbnailTrack ||
     !previousButton ||
     !nextButton ||
-    !featureImage ||
+    !featureMedia ||
     !featureIndex ||
     !featureTitle ||
     !featureMeta ||
@@ -43,8 +44,125 @@
     return;
   }
 
+  let projects = [];
+  let thumbnails = [];
   let activeIndex = 0;
   const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+
+  const parseScalar = (value) => {
+    const trimmed = value.trim();
+    if (!trimmed) return "";
+    if ((trimmed.startsWith('"') && trimmed.endsWith('"')) || (trimmed.startsWith("'") && trimmed.endsWith("'"))) {
+      return trimmed.slice(1, -1);
+    }
+    return trimmed;
+  };
+
+  const parseFrontMatter = (markdown) => {
+    const match = markdown.match(/^---\s*\n([\s\S]*?)\n---\s*\n?([\s\S]*)$/);
+    const fields = {};
+    const body = match ? match[2].trim() : markdown.trim();
+    let activeListKey;
+
+    if (match) {
+      match[1].split("\n").forEach((line) => {
+        const listItem = line.match(/^\s+-\s+(.+)$/);
+        if (listItem && activeListKey) {
+          fields[activeListKey].push(parseScalar(listItem[1]));
+          return;
+        }
+
+        const field = line.match(/^([A-Za-z][\w-]*):\s*(.*)$/);
+        if (!field) return;
+
+        const [, key, rawValue] = field;
+        if (rawValue.trim() === "") {
+          fields[key] = [];
+          activeListKey = key;
+        } else if (rawValue.trim().startsWith("[") && rawValue.trim().endsWith("]")) {
+          fields[key] = rawValue
+            .trim()
+            .slice(1, -1)
+            .split(",")
+            .map(parseScalar)
+            .filter(Boolean);
+          activeListKey = undefined;
+        } else {
+          fields[key] = parseScalar(rawValue);
+          activeListKey = undefined;
+        }
+      });
+    }
+
+    return {
+      ...fields,
+      description: fields.description || body,
+    };
+  };
+
+  const asArray = (value) => {
+    if (Array.isArray(value)) return value.filter(Boolean);
+    return value ? [value] : [];
+  };
+
+  const isVideo = (source) => /\.(mp4|webm|mov|ogg)(?:\?|$)/i.test(source);
+
+  const createMediaElement = (source, alt, { detail = false } = {}) => {
+    if (!source) {
+      const empty = document.createElement("span");
+      empty.className = "media-missing";
+      empty.textContent = "Media unavailable";
+      return empty;
+    }
+
+    const media = document.createElement(isVideo(source) ? "video" : "img");
+    media.className = "project-media";
+
+    if (media instanceof HTMLVideoElement) {
+      media.muted = true;
+      media.playsInline = true;
+      media.preload = "metadata";
+      media.controls = detail;
+      media.setAttribute("aria-label", alt);
+      if (!detail) media.loop = true;
+    } else {
+      media.src = source;
+      media.alt = alt;
+      media.decoding = "async";
+    }
+
+    media.src = source;
+    return media;
+  };
+
+  const resolveProject = async (entry, catalogDirectory) => {
+    let fields = entry;
+    if (entry.markdown) {
+      const markdownUrl = new URL(entry.markdown, catalogDirectory);
+      const response = await fetch(markdownUrl);
+      if (!response.ok) throw new Error(`Unable to load ${entry.markdown}`);
+      fields = parseFrontMatter(await response.text());
+    }
+    const projectDirectory = entry.markdown
+      ? new URL(entry.markdown, catalogDirectory).href.replace(/[^/]+$/, "")
+      : catalogDirectory;
+    const media = entry.markdown
+      ? asArray(fields.media || entry.media).map((source) => new URL(source, projectDirectory).href)
+      : asArray(entry.media).map((source) => new URL(source, catalogDirectory).href);
+
+    return {
+      ...fields,
+      slug: entry.slug,
+      index: fields.index || entry.index || entry.slug?.match(/\d+$/)?.[0] || "",
+      title: fields.title || entry.slug,
+      meta: fields.meta || "",
+      medium: fields.medium || "",
+      year: fields.year || "",
+      series: fields.series || "",
+      alt: fields.alt || fields.title || entry.slug,
+      media,
+    };
+  };
 
   const setTheme = (theme) => {
     const isLight = theme === "light";
@@ -55,8 +173,12 @@
       themeToggle.setAttribute("aria-label", isLight ? "Switch to dark mode" : "Switch to light mode");
     }
 
-    document.querySelector('meta[name="theme-color"]')?.setAttribute("content", isLight ? "#f2f1ed" : "#151515");
-    window.localStorage.setItem("portfolio-theme", isLight ? "light" : "dark");
+    document.querySelector("meta[name=\"theme-color\"]")?.setAttribute("content", isLight ? "#f2f1ed" : "#151515");
+    try {
+      window.localStorage.setItem("portfolio-theme", isLight ? "light" : "dark");
+    } catch {
+      // Private browsing can disable storage without affecting the theme itself.
+    }
   };
 
   const scrollToTop = () => {
@@ -66,21 +188,14 @@
     });
   };
 
-  const getThumbnailMaxScroll = () => {
-    if (!thumbnailViewport) return 0;
-    return Math.max(0, thumbnailViewport.scrollWidth - thumbnailViewport.clientWidth);
-  };
+  const getThumbnailMaxScroll = () => Math.max(0, thumbnailViewport.scrollWidth - thumbnailViewport.clientWidth);
 
   const setThumbnailScroll = (scrollLeft) => {
-    if (!thumbnailViewport) return;
-
     const clampedScroll = Math.min(getThumbnailMaxScroll(), Math.max(0, scrollLeft));
     thumbnailViewport.scrollLeft = clampedScroll;
   };
 
   const centerThumbnail = (thumbnail) => {
-    if (!thumbnailViewport) return;
-
     const viewportRect = thumbnailViewport.getBoundingClientRect();
     const thumbnailRect = thumbnail.getBoundingClientRect();
     const centeredScroll =
@@ -91,17 +206,15 @@
     setThumbnailScroll(centeredScroll);
   };
 
-  const clampThumbnailScroll = () => {
-    if (!thumbnailViewport) return;
-    setThumbnailScroll(thumbnailViewport.scrollLeft);
-  };
+  const clampThumbnailScroll = () => setThumbnailScroll(thumbnailViewport.scrollLeft);
 
   const updateDocumentTitle = (title = "Portfolio") => {
     document.title = title === "Portfolio" ? "Portfolio — Digital Artist" : `${title} — Portfolio`;
   };
 
   const renderProject = (index, { focus = false, center = true } = {}) => {
-    activeIndex = (index + thumbnails.length) % thumbnails.length;
+    activeIndex = (index + projects.length) % projects.length;
+    const project = projects[activeIndex];
     const thumbnail = thumbnails[activeIndex];
 
     thumbnails.forEach((item, itemIndex) => {
@@ -110,42 +223,78 @@
       item.tabIndex = isSelected ? 0 : -1;
     });
 
-    featureImage.classList.add("is-changing");
-    featureImage.src = thumbnail.dataset.image;
-    featureImage.alt = thumbnail.dataset.alt;
-    featureIndex.textContent = thumbnail.dataset.title;
-    featureTitle.textContent = thumbnail.dataset.title;
-    featureMeta.textContent = thumbnail.dataset.meta;
-    featureDescription.textContent = thumbnail.dataset.description;
-    featureMedium.textContent = thumbnail.dataset.medium;
-    featureYear.textContent = thumbnail.dataset.year;
-    featureSeries.textContent = thumbnail.dataset.series;
-    updateDocumentTitle(thumbnail.dataset.title);
+    featureMedia.classList.add("is-changing");
+    featureMedia.replaceChildren(createMediaElement(project.media[0], project.alt, { detail: true }));
+    featureIndex.textContent = `Project ${project.index}`;
+    featureTitle.textContent = project.title;
+    featureMeta.textContent = project.meta;
+    featureDescription.textContent = project.description;
+    featureMedium.textContent = project.medium;
+    featureYear.textContent = project.year;
+    featureSeries.textContent = project.series;
+    updateDocumentTitle(project.title);
 
-    window.setTimeout(() => featureImage.classList.remove("is-changing"), 120);
+    window.setTimeout(() => featureMedia.classList.remove("is-changing"), 120);
 
-    if (center) centerThumbnail(thumbnail);
-    if (focus) thumbnail.focus();
+    if (center && thumbnail) centerThumbnail(thumbnail);
+    if (focus && thumbnail) thumbnail.focus();
   };
 
   const moveProject = (step, options) => renderProject(activeIndex + step, options);
 
-  const createGridCard = (thumbnail, index) => {
+  const createThumbnail = (project, index) => {
+    const thumbnail = document.createElement("button");
+    thumbnail.className = "project-thumb";
+    thumbnail.type = "button";
+    thumbnail.setAttribute("data-project-thumb", "");
+    thumbnail.setAttribute("role", "tab");
+    thumbnail.setAttribute("aria-selected", "false");
+    thumbnail.setAttribute("aria-controls", "project-stage");
+    thumbnail.tabIndex = -1;
+
+    const media = createMediaElement(project.media[0], "", { detail: false });
+    media.setAttribute("aria-hidden", "true");
+    thumbnail.append(media);
+
+    const label = document.createElement("span");
+    label.className = "sr-only";
+    label.textContent = project.title;
+    thumbnail.append(label);
+    thumbnail.addEventListener("click", () => renderProject(index, { focus: true }));
+    thumbnail.addEventListener("keydown", (event) => {
+      if (event.key === "ArrowRight") {
+        event.preventDefault();
+        moveProject(1, { focus: true });
+      }
+      if (event.key === "ArrowLeft") {
+        event.preventDefault();
+        moveProject(-1, { focus: true });
+      }
+      if (event.key === "Home") {
+        event.preventDefault();
+        renderProject(0, { focus: true });
+      }
+      if (event.key === "End") {
+        event.preventDefault();
+        renderProject(projects.length - 1, { focus: true });
+      }
+    });
+
+    return thumbnail;
+  };
+
+  const createGridCard = (project, index) => {
     const card = document.createElement("article");
     card.className = "project-grid-card";
 
     const button = document.createElement("button");
     button.className = "project-grid-card__trigger";
     button.type = "button";
-    button.setAttribute("aria-label", `Open ${thumbnail.dataset.title}`);
+    button.setAttribute("aria-label", `Open ${project.title}`);
 
     const media = document.createElement("span");
     media.className = "project-grid-card__media";
-
-    const image = document.createElement("img");
-    image.src = thumbnail.dataset.image;
-    image.alt = thumbnail.dataset.alt;
-    media.append(image);
+    media.append(createMediaElement(project.media[0], project.alt));
 
     const overlay = document.createElement("span");
     overlay.className = "project-grid-card__overlay";
@@ -153,11 +302,11 @@
 
     const title = document.createElement("span");
     title.className = "project-grid-card__title";
-    title.textContent = thumbnail.dataset.title;
+    title.textContent = project.title;
 
     const meta = document.createElement("span");
     meta.className = "project-grid-card__meta";
-    meta.textContent = thumbnail.dataset.meta;
+    meta.textContent = project.meta;
 
     const action = document.createElement("span");
     action.className = "project-grid-card__action";
@@ -192,7 +341,7 @@
     renderProject(index);
     window.history.replaceState(null, "", "#project-detail");
     scrollToTop();
-    thumbnails[activeIndex].focus({ preventScroll: true });
+    thumbnails[activeIndex]?.focus({ preventScroll: true });
   };
 
   const showAbout = () => {
@@ -207,11 +356,43 @@
     document.querySelector("#about-title")?.focus({ preventScroll: true });
   };
 
-  grid.append(...thumbnails.map(createGridCard));
+  const showLoadError = (error) => {
+    console.error(error);
+    grid.textContent = "Project content could not be loaded.";
+    grid.classList.add("content-error");
+  };
 
-  thumbnailViewport?.addEventListener("scroll", clampThumbnailScroll, { passive: true });
+  const getStoredTheme = () => {
+    try {
+      return window.localStorage.getItem("portfolio-theme") || "dark";
+    } catch {
+      return "dark";
+    }
+  };
+
+  const loadContent = async () => {
+    const catalogUrl = new URL("content/projects.json", document.baseURI);
+    const catalogResponse = await fetch(catalogUrl);
+    if (!catalogResponse.ok) throw new Error("Unable to load content/projects.json");
+
+    const catalog = await catalogResponse.json();
+    const catalogDirectory = new URL(".", catalogUrl);
+    projects = await Promise.all((catalog.projects || []).map((entry) => resolveProject(entry, catalogDirectory)));
+    if (!projects.length) throw new Error("The project catalog is empty");
+
+    thumbnails = projects.map(createThumbnail);
+    thumbnailTrack.append(...thumbnails);
+    grid.append(...projects.map(createGridCard));
+    renderProject(0, { center: false });
+
+    const initialHash = window.location.hash;
+    if (initialHash === "#project-detail") showDetail(0);
+    else if (initialHash === "#about") showAbout();
+    else showGrid();
+  };
+
+  thumbnailViewport.addEventListener("scroll", clampThumbnailScroll, { passive: true });
   window.addEventListener("resize", clampThumbnailScroll);
-
   window.addEventListener(
     "wheel",
     (event) => {
@@ -219,10 +400,7 @@
       if (Math.abs(event.deltaX) <= Math.abs(event.deltaY) || !event.deltaX) return;
 
       event.preventDefault();
-
-      if (thumbnailViewport?.contains(event.target)) {
-        setThumbnailScroll(thumbnailViewport.scrollLeft + event.deltaX);
-      }
+      if (thumbnailViewport.contains(event.target)) setThumbnailScroll(thumbnailViewport.scrollLeft + event.deltaX);
     },
     { capture: true, passive: false },
   );
@@ -237,13 +415,11 @@
         suppressThumbnailClick = false;
       }, 0);
     }
-
     thumbnailDrag = undefined;
   };
 
-  thumbnailViewport?.addEventListener("pointerdown", (event) => {
+  thumbnailViewport.addEventListener("pointerdown", (event) => {
     if (event.pointerType === "mouse") return;
-
     thumbnailDrag = {
       pointerId: event.pointerId,
       startX: event.clientX,
@@ -253,9 +429,8 @@
     };
   });
 
-  thumbnailViewport?.addEventListener("pointermove", (event) => {
+  thumbnailViewport.addEventListener("pointermove", (event) => {
     if (!thumbnailDrag || event.pointerId !== thumbnailDrag.pointerId) return;
-
     const deltaX = thumbnailDrag.startX - event.clientX;
     const deltaY = thumbnailDrag.startY - event.clientY;
 
@@ -268,9 +443,9 @@
     setThumbnailScroll(thumbnailDrag.startScroll + deltaX);
   });
 
-  thumbnailViewport?.addEventListener("pointerup", finishThumbnailDrag);
-  thumbnailViewport?.addEventListener("pointercancel", finishThumbnailDrag);
-  thumbnailViewport?.addEventListener(
+  thumbnailViewport.addEventListener("pointerup", finishThumbnailDrag);
+  thumbnailViewport.addEventListener("pointercancel", finishThumbnailDrag);
+  thumbnailViewport.addEventListener(
     "click",
     (event) => {
       if (!suppressThumbnailClick) return;
@@ -280,32 +455,6 @@
     },
     true,
   );
-
-  thumbnails.forEach((thumbnail, index) => {
-    thumbnail.addEventListener("click", () => renderProject(index, { focus: true }));
-
-    thumbnail.addEventListener("keydown", (event) => {
-      if (event.key === "ArrowRight") {
-        event.preventDefault();
-        moveProject(1, { focus: true });
-      }
-
-      if (event.key === "ArrowLeft") {
-        event.preventDefault();
-        moveProject(-1, { focus: true });
-      }
-
-      if (event.key === "Home") {
-        event.preventDefault();
-        renderProject(0, { focus: true });
-      }
-
-      if (event.key === "End") {
-        event.preventDefault();
-        renderProject(thumbnails.length - 1, { focus: true });
-      }
-    });
-  });
 
   previousButton.addEventListener("click", () => moveProject(-1, { focus: true }));
   nextButton.addEventListener("click", () => moveProject(1, { focus: true }));
@@ -324,7 +473,6 @@
     setTheme(document.documentElement.dataset.theme === "light" ? "dark" : "light");
   });
 
-  setTheme(window.localStorage.getItem("portfolio-theme") || "dark");
-  renderProject(0, { center: false });
-  showGrid();
+  setTheme(getStoredTheme());
+  loadContent().catch(showLoadError);
 })();

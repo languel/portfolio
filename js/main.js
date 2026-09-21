@@ -13,6 +13,9 @@
   const featureTitle = document.querySelector("#feature-title");
   const featureMeta = document.querySelector("#feature-meta");
   const featureDescription = document.querySelector("#feature-description");
+  const featureBody = document.querySelector("#feature-body");
+  const featureEmbed = document.querySelector("#feature-embed");
+  const featureGallery = document.querySelector("#feature-gallery");
   const featureMedium = document.querySelector("#feature-medium");
   const featureYear = document.querySelector("#feature-year");
   const featureSeries = document.querySelector("#feature-series");
@@ -36,6 +39,9 @@
     !featureTitle ||
     !featureMeta ||
     !featureDescription ||
+    !featureBody ||
+    !featureEmbed ||
+    !featureGallery ||
     !featureMedium ||
     !featureYear ||
     !featureSeries ||
@@ -96,6 +102,7 @@
 
     return {
       ...fields,
+      body,
       description: fields.description || body,
     };
   };
@@ -106,6 +113,7 @@
   };
 
   const isVideo = (source) => /\.(mp4|webm|mov|ogg)(?:\?|$)/i.test(source);
+  const isPdf = (source) => /\.pdf(?:\?|$)/i.test(source);
 
   const createMediaElement = (source, alt, { detail = false } = {}) => {
     if (!source) {
@@ -115,10 +123,14 @@
       return empty;
     }
 
-    const media = document.createElement(isVideo(source) ? "video" : "img");
+    const media = document.createElement(isPdf(source) ? "iframe" : isVideo(source) ? "video" : "img");
     media.className = "project-media";
 
-    if (media instanceof HTMLVideoElement) {
+    if (media instanceof HTMLIFrameElement) {
+      media.src = source;
+      media.title = alt || "Embedded PDF";
+      media.loading = "lazy";
+    } else if (media instanceof HTMLVideoElement) {
       media.muted = true;
       media.playsInline = true;
       media.preload = "metadata";
@@ -131,17 +143,19 @@
       media.decoding = "async";
     }
 
-    media.src = source;
+    if (!(media instanceof HTMLIFrameElement)) media.src = source;
     return media;
   };
 
   const resolveProject = async (entry, catalogDirectory) => {
     let fields = entry;
+    let body = entry.body || "";
     if (entry.markdown) {
       const markdownUrl = new URL(entry.markdown, catalogDirectory);
       const response = await fetch(markdownUrl);
       if (!response.ok) throw new Error(`Unable to load ${entry.markdown}`);
       fields = parseFrontMatter(await response.text());
+      body = fields.body || "";
     }
     const projectDirectory = entry.markdown
       ? new URL(entry.markdown, catalogDirectory).href.replace(/[^/]+$/, "")
@@ -152,6 +166,7 @@
 
     return {
       ...fields,
+      body,
       slug: entry.slug,
       index: fields.index || entry.index || entry.slug?.match(/\d+$/)?.[0] || "",
       title: fields.title || entry.slug,
@@ -160,6 +175,9 @@
       year: fields.year || "",
       series: fields.series || "",
       alt: fields.alt || fields.title || entry.slug,
+      summary: fields.summary || fields.description || body.split(/\n\s*\n/)[0].trim(),
+      directory: projectDirectory,
+      embed: fields.embed ? new URL(fields.embed, projectDirectory).href : "",
       media,
     };
   };
@@ -212,6 +230,136 @@
     document.title = title === "Portfolio" ? "Portfolio — Digital Artist" : `${title} — Portfolio`;
   };
 
+  const resolveUrl = (source, baseUrl) => {
+    try {
+      return new URL(source, baseUrl).href;
+    } catch {
+      return source;
+    }
+  };
+
+  const renderInline = (text, baseUrl) => {
+    const fragment = document.createDocumentFragment();
+    const tokenPattern = /!\[([^\]]*)\]\(([^)]+)\)|\[([^\]]+)\]\(([^)]+)\)|\\\(([^)]+)\\\)/g;
+    let cursor = 0;
+    let token;
+
+    while ((token = tokenPattern.exec(text))) {
+      if (token.index > cursor) fragment.append(text.slice(cursor, token.index));
+
+      if (token[1] !== undefined) {
+        const image = document.createElement("img");
+        image.className = "project-body-image";
+        image.src = resolveUrl(token[2], baseUrl);
+        image.alt = token[1];
+        image.loading = "lazy";
+        fragment.append(image);
+      } else if (token[3] !== undefined) {
+        const link = document.createElement("a");
+        link.href = resolveUrl(token[4], baseUrl);
+        link.textContent = token[3];
+        if (/^https?:/i.test(link.href)) {
+          link.target = "_blank";
+          link.rel = "noreferrer noopener";
+        }
+        fragment.append(link);
+      } else {
+        const math = document.createElement("code");
+        math.className = "project-inline-math";
+        math.textContent = token[5];
+        fragment.append(math);
+      }
+
+      cursor = tokenPattern.lastIndex;
+    }
+
+    if (cursor < text.length) fragment.append(text.slice(cursor));
+    return fragment;
+  };
+
+  const renderMarkdown = (markdown, container, baseUrl) => {
+    container.replaceChildren();
+    let paragraph = [];
+    let code = null;
+
+    const flushParagraph = () => {
+      if (!paragraph.length) return;
+      const text = paragraph.join(" ").trim();
+      if (text) {
+        const element = document.createElement("p");
+        element.append(renderInline(text, baseUrl));
+        container.append(element);
+      }
+      paragraph = [];
+    };
+
+    const flushCode = () => {
+      if (!code) return;
+      const pre = document.createElement("pre");
+      const codeElement = document.createElement("code");
+      if (code.language) codeElement.className = `language-${code.language}`;
+      codeElement.textContent = code.lines.join("\n");
+      pre.append(codeElement);
+      container.append(pre);
+      code = null;
+    };
+
+    markdown.split("\n").forEach((line) => {
+      const fence = line.match(/^```\s*([\w+-]*)\s*$/);
+      if (fence) {
+        if (code) flushCode();
+        else {
+          flushParagraph();
+          code = { language: fence[1], lines: [] };
+        }
+        return;
+      }
+
+      if (code) {
+        code.lines.push(line);
+        return;
+      }
+
+      const heading = line.match(/^#{2,6}\s+(.+)$/);
+      if (heading) {
+        flushParagraph();
+        const element = document.createElement("h3");
+        element.textContent = heading[1];
+        container.append(element);
+        return;
+      }
+
+      if (!line.trim()) flushParagraph();
+      else paragraph.push(line.trim());
+    });
+
+    if (code) flushCode();
+    flushParagraph();
+  };
+
+  const renderEmbed = (project) => {
+    featureEmbed.replaceChildren();
+    if (!project.embed) return;
+
+    const iframe = document.createElement("iframe");
+    iframe.src = project.embed;
+    iframe.title = `${project.title} embedded sketch`;
+    iframe.loading = "lazy";
+    iframe.allow = "autoplay; fullscreen";
+    iframe.referrerPolicy = "no-referrer";
+    featureEmbed.append(iframe);
+  };
+
+  const renderGallery = (project) => {
+    featureGallery.replaceChildren();
+    project.media.slice(1).forEach((source, mediaIndex) => {
+      const figure = document.createElement("figure");
+      const media = createMediaElement(source, `${project.alt} — additional media ${mediaIndex + 1}`, { detail: true });
+      figure.append(media);
+      featureGallery.append(figure);
+    });
+  };
+
   const renderProject = (index, { focus = false, center = true } = {}) => {
     activeIndex = (index + projects.length) % projects.length;
     const project = projects[activeIndex];
@@ -228,10 +376,13 @@
     featureIndex.textContent = `Project ${project.index}`;
     featureTitle.textContent = project.title;
     featureMeta.textContent = project.meta;
-    featureDescription.textContent = project.description;
+    featureDescription.textContent = project.summary;
     featureMedium.textContent = project.medium;
     featureYear.textContent = project.year;
     featureSeries.textContent = project.series;
+    renderMarkdown(project.body, featureBody, project.directory);
+    renderEmbed(project);
+    renderGallery(project);
     updateDocumentTitle(project.title);
 
     window.setTimeout(() => featureMedia.classList.remove("is-changing"), 120);

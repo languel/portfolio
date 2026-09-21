@@ -37,10 +37,27 @@ A study of figures moving through an impossible threshold.
 ```
 
 The `media` field may be a single image/video path, an inline list such as
-`[media/a.png, media/b.png]`, or a YAML list. The viewer currently presents the
-first item as the card and detail media; video files use native playback
-controls in the detail view. Add the project markdown path to
-`content/projects.json` to include a new project and control its order.
+`[media/a.png, media/b.png]`, or a YAML list. The viewer presents the first
+item as the card and detail media, then places additional items in a detail
+gallery. Images, animated GIFs, video, SVG, and PDF media are supported; video
+files use native playback controls and PDFs render in an embedded viewer.
+
+Projects can also include richer teaching examples:
+
+```yaml
+summary: A short line used on the detail header.
+embed: media/sketch.html
+```
+
+The markdown body supports paragraphs, headings, links, inline images, and
+fenced code blocks. An `embed` URL or local HTML file renders below the prose,
+so a project can demonstrate a p5.js sketch or a live Strudel REPL without
+changing the application code. Relative download links (for example a `.zip`)
+are served from the project folder, which makes self-contained examples easy
+to share with students.
+
+Add the project markdown path to `content/projects.json` to include a new
+project and control its order.
 
 For a one-off image or video that needs no written metadata, a catalog entry
 can point directly at the media file instead of a markdown file:

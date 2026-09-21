@@ -92,6 +92,10 @@
               </div>
             </dl>
           </div>
+
+          <div id="feature-body" class="project-feature__body" aria-label="Project notes"></div>
+          <div id="feature-embed" class="project-feature__embed" aria-live="polite"></div>
+          <div id="feature-gallery" class="project-feature__gallery" aria-label="Additional project media"></div>
         </article>
       </section>
 
@@ -122,7 +126,12 @@
               <span>Message</span>
               <textarea name="message" rows="4" required></textarea>
             </label>
-            <button type="submit">Send inquiry <span aria-hidden="true">→</span></button>
+            <button type="submit" aria-label="Send inquiry">
+              <svg role="img" aria-label="send" viewBox="0 0 24 24" focusable="false">
+                <path d="m3 11 17-8-5.5 17-3.2-7.1L3 11Z" />
+                <path d="m11.3 12.9 4.4-4.4" />
+              </svg>
+            </button>
           </form>
         </div>
       </section>

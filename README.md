@@ -1,84 +1,90 @@
-# Portfolio
+# Class Portfolio Template
 
-A small, static portfolio viewer for a digital artist. The front page is a
-responsive grid; selecting a project rearranges the same document into the
-detail view and thumbnail rail.
+This is a small, static portfolio template for a class, studio, or independent
+project archive. It has no build step or database: the browser loads a project
+catalog and markdown files, then lays the work out as a responsive grid.
 
-## Content model
+## Start here
 
-Project content lives in `content/projects/`. Each project is a self-contained
-folder:
+### 1. Replace the sample files
 
-```text
-content/
-  projects.json                 # display order and markdown entry points
-  projects/
-    project-01/
-      project.md                # Obsidian-style frontmatter + description
-      media/
-        project-01.png
-```
+Replace the sample files in `content/projects/` with your own work, then edit
+`content/projects.json` to set the order and number of projects.
 
-`project.md` uses a small YAML frontmatter block. The body becomes the project
-description, so the prose can stay readable in Obsidian:
+### 2. Run it locally
 
-```md
----
-title: Project 01
-index: 01
-meta: Digital study · 2026
-medium: Bitmap / 1-bit
-year: 2026
-series: Thresholds
-media: media/project-01.png
-alt: Pixel-art doorway and figure in grayscale
----
-A study of figures moving through an impossible threshold.
-```
-
-The `media` field may be a single image/video path, an inline list such as
-`[media/a.png, media/b.png]`, or a YAML list. The viewer presents the first
-item as the card and detail media, then places additional items in a detail
-gallery. Images, animated GIFs, video, SVG, and PDF media are supported; video
-files use native playback controls and PDFs render in an embedded viewer.
-
-Projects can also include richer teaching examples:
-
-```yaml
-summary: A short line used on the detail header.
-embed: media/sketch.html
-```
-
-The markdown body supports paragraphs, headings, links, inline images, and
-fenced code blocks. An `embed` URL or local HTML file renders below the prose,
-so a project can demonstrate a p5.js sketch or a live Strudel REPL without
-changing the application code. Relative download links (for example a `.zip`)
-are served from the project folder, which makes self-contained examples easy
-to share with students. Inline `\(...\)` and display `\[...\]` math is rendered
-with KaTeX when the CDN is available, while the source remains readable as a
-fallback. LilyPond source stays visible in its fenced block and can be paired
-with a rendered SVG score preview in the same project folder.
-
-Add the project markdown path to `content/projects.json` to include a new
-project and control its order.
-
-For a one-off image or video that needs no written metadata, a catalog entry
-can point directly at the media file instead of a markdown file:
-
-```json
-{ "slug": "gesture-study", "media": "projects/gesture-study/media/study.mp4" }
-```
-
-## Run locally
+Open the site through a local web server (the browser must be able to fetch the
+markdown and catalog files):
 
 ```bash
 python3 -m http.server 8080 --bind 0.0.0.0
 ```
 
-Then visit [http://localhost:8080](http://localhost:8080). A static server is
-required because the viewer fetches markdown and catalog JSON at runtime.
+Visit [http://localhost:8080](http://localhost:8080) and open Project 1. This project displays this
+README below its image, so students can use it as an in-site orientation page
+while they customize the template.
 
-## Release checkpoint
+## Adapt it to a class or assignment
 
-`v1.0.0-grid-baseline` tags the stable visual grid before the content-folder
-migration.
+### 1. Name the portfolio
+
+Update the page title, description, social metadata, and About text in
+`index.html`. Change the favicon in `favicon.svg` if the class has its own mark.
+
+### 2. Add a project
+
+Create a folder such as `content/projects/project-13/` with a `media/` folder
+and a `project.md` file. The frontmatter below is the only required shape:
+
+```md
+---
+title: Assignment title
+index: 13
+meta: Short label · 2026
+medium: Image / code / sound
+year: 2026
+series: Unit or course name
+media: media/project-13.png
+alt: A useful description of the image
+---
+Write the project description here. Markdown paragraphs, headings, links,
+inline images, and fenced code blocks are supported.
+```
+
+Then add the markdown path to `content/projects.json`:
+
+```json
+{ "slug": "project-13", "markdown": "projects/project-13/project.md" }
+```
+
+The first media item becomes the grid card and large image. Additional items
+listed in `media` appear in the project gallery. Keep media inside the project
+folder so each student submission stays portable.
+
+### 3. Remove the examples
+
+Once the class has its own projects, delete unused project folders and remove
+their entries from `content/projects.json`. Project 1 is intentionally retained
+as the template guide; point its `bodyFile` at another guide or remove that
+field when the class no longer needs it.
+
+### 4. Publish
+
+This repository includes a GitHub Pages workflow in
+`.github/workflows/pages.yml`. Push the folder to a repository, enable Pages
+for the workflow, and share the resulting site URL. The project can also be
+hosted by any static file server.
+
+## File map
+
+```text
+index.html                 page shell and About copy
+css/styles.css             layout and theme styles
+js/main.js                 catalog loading and project rendering
+content/projects.json      project order and markdown entry points
+content/projects/*         one self-contained folder per project
+```
+
+There is deliberately no package manager or framework to install. Keep the
+template small, edit the content first, and only change the application code
+when the class needs a different interaction.

@@ -1,6 +1,10 @@
 {
   "projects": [
-    { "slug": "project-01", "markdown": "projects/project-01/project.md" },
+    {
+      "slug": "project-01",
+      "markdown": "projects/project-01/project.md",
+      "bodyFile": "../README.md"
+    },
     { "slug": "project-02", "markdown": "projects/project-02/project.md" },
     { "slug": "project-03", "markdown": "projects/project-03/project.md" },
     { "slug": "project-04", "markdown": "projects/project-04/project.md" },

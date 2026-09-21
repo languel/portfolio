@@ -500,7 +500,6 @@ main {
 .project-thumb[aria-selected="true"] {
   border-color: var(--text);
   opacity: 1;
-  box-shadow: 0 0 0 1px var(--text);
 }
 
 .project-thumb img,
@@ -596,7 +595,7 @@ main {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(18rem, 0.75fr);
   gap: clamp(1.5rem, 5vw, 6rem);
-  padding: 6px 0 0;
+  padding: 0.85rem calc(var(--header-height) + var(--pad)) 0;
   border-top: 1px solid var(--line);
 }
 
@@ -634,14 +633,14 @@ main {
 .project-feature__body {
   width: 100%;
   max-width: var(--detail-content-max);
-  padding: clamp(1.6rem, 4vw, 3rem) 0 0;
+  padding: clamp(2rem, 4.5vw, 3.75rem) calc(var(--header-height) + var(--pad)) 0;
   color: var(--copy);
 }
 
 .project-feature__body p {
-  margin: 0 0 1rem;
+  margin: 0 0 1.35rem;
   font-size: 0.9rem;
-  line-height: 1.7;
+  line-height: 1.8;
 }
 
 .project-feature__body p:last-child {
@@ -661,7 +660,7 @@ main {
 
 .project-feature__body pre {
   max-width: 100%;
-  margin: 1.2rem 0;
+  margin: 1.5rem 0;
   overflow-x: auto;
   border: 1px solid var(--line);
   padding: 0.85rem 0.95rem;

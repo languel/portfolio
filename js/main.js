@@ -150,12 +150,14 @@
   const resolveProject = async (entry, catalogDirectory) => {
     let fields = entry;
     let body = entry.body || "";
+    let bodyDirectory;
     if (entry.markdown) {
       const markdownUrl = new URL(entry.markdown, catalogDirectory);
       const response = await fetch(markdownUrl);
       if (!response.ok) throw new Error(`Unable to load ${entry.markdown}`);
       fields = parseFrontMatter(await response.text());
       body = fields.body || "";
+      bodyDirectory = new URL(".", markdownUrl);
     }
     const projectDirectory = entry.markdown
       ? new URL(entry.markdown, catalogDirectory).href.replace(/[^/]+$/, "")
@@ -163,6 +165,14 @@
     const media = entry.markdown
       ? asArray(fields.media || entry.media).map((source) => new URL(source, projectDirectory).href)
       : asArray(entry.media).map((source) => new URL(source, catalogDirectory).href);
+
+    if (entry.bodyFile) {
+      const bodyUrl = new URL(entry.bodyFile, catalogDirectory);
+      const bodyResponse = await fetch(bodyUrl);
+      if (!bodyResponse.ok) throw new Error(`Unable to load ${entry.bodyFile}`);
+      body = parseFrontMatter(await bodyResponse.text()).body;
+      bodyDirectory = new URL(".", bodyUrl);
+    }
 
     return {
       ...fields,
@@ -177,6 +187,7 @@
       alt: fields.alt || fields.title || entry.slug,
       summary: fields.summary || fields.description || body.split(/\n\s*\n/)[0].trim(),
       directory: projectDirectory,
+      bodyDirectory: bodyDirectory || projectDirectory,
       embed: fields.embed ? new URL(fields.embed, projectDirectory).href : "",
       media,
     };
@@ -320,11 +331,12 @@
         return;
       }
 
-      const heading = line.match(/^#{2,6}\s+(.+)$/);
+      const heading = line.match(/^(#{1,6})\s+(.+)$/);
       if (heading) {
         flushParagraph();
-        const element = document.createElement("h3");
-        element.textContent = heading[1];
+        const level = Math.min(4, heading[1].length + 1);
+        const element = document.createElement(`h${level}`);
+        element.textContent = heading[2];
         container.append(element);
         return;
       }
@@ -371,6 +383,12 @@
     });
   };
 
+  const bodyWithoutSummary = (project) => {
+    const summary = (project.summary || "").trim();
+    const paragraphs = project.body.split(/\n\s*\n/);
+    return summary && paragraphs[0]?.trim() === summary ? paragraphs.slice(1).join("\n\n").trim() : project.body;
+  };
+
   const renderProject = (index, { focus = false, center = true } = {}) => {
     activeIndex = (index + projects.length) % projects.length;
     const project = projects[activeIndex];
@@ -391,7 +409,7 @@
     featureMedium.textContent = project.medium;
     featureYear.textContent = project.year;
     featureSeries.textContent = project.series;
-    renderMarkdown(project.body, featureBody, project.directory);
+    renderMarkdown(bodyWithoutSummary(project), featureBody, project.bodyDirectory);
     renderMath(featureBody);
     renderEmbed(project);
     renderGallery(project);

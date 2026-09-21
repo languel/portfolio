@@ -1,11 +1,11 @@
 ---
-title: Project 01
+title: Template guide
 index: 01
-meta: Digital study · 2026
-medium: Bitmap / 1-bit
+meta: Start here · Template
+medium: Markdown / static site
 year: 2026
-series: Thresholds
+series: Class portfolio
 media: media/project-01.png
-alt: Pixel-art doorway and figure in grayscale
+alt: Monochrome example image for the portfolio template
 ---
-A study of figures moving through an impossible threshold, built from hard edges, dither, and a single field of light.
+Read the setup and customization guide below.

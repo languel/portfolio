@@ -497,6 +497,11 @@ main {
   transform: translateY(-1px);
 }
 
+.project-thumb:focus-visible {
+  outline: none;
+  outline-offset: 0;
+}
+
 .project-thumb[aria-selected="true"] {
   border-color: var(--text);
   opacity: 1;

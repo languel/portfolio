@@ -7,6 +7,7 @@ year: 2026
 series: Class portfolio
 media: media/project-01.png
 alt: Monochrome example image for the portfolio template
+summary: Setup and customization instructions for adapting this class portfolio.
 ---
 # Using this template
 

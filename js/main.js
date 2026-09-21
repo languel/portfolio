@@ -243,7 +243,7 @@
 
   const renderInline = (text, baseUrl) => {
     const fragment = document.createDocumentFragment();
-    const tokenPattern = /!\[([^\]]*)\]\(([^)]+)\)|\[([^\]]+)\]\(([^)]+)\)|\\\(([^)]+)\\\)/g;
+    const tokenPattern = /!\[([^\]]*)\]\(([^)]+)\)|\[([^\]]+)\]\(([^)]+)\)|\\\(([^)]+)\\\)|\*\*([^*]+)\*\*|\*([^*]+)\*|<(https?:\/\/[^>]+)>|`([^`]+)`/g;
     let cursor = 0;
     let token;
 
@@ -266,11 +266,30 @@
           link.rel = "noreferrer noopener";
         }
         fragment.append(link);
-      } else {
+      } else if (token[5] !== undefined) {
         const math = document.createElement("span");
         math.className = "project-inline-math";
         math.textContent = `\\(${token[5]}\\)`;
         fragment.append(math);
+      } else if (token[6] !== undefined) {
+        const strong = document.createElement("strong");
+        strong.textContent = token[6];
+        fragment.append(strong);
+      } else if (token[7] !== undefined) {
+        const emphasis = document.createElement("em");
+        emphasis.textContent = token[7];
+        fragment.append(emphasis);
+      } else if (token[8] !== undefined) {
+        const link = document.createElement("a");
+        link.href = token[8];
+        link.textContent = token[8];
+        link.target = "_blank";
+        link.rel = "noreferrer noopener";
+        fragment.append(link);
+      } else if (token[9] !== undefined) {
+        const inlineCode = document.createElement("code");
+        inlineCode.textContent = token[9];
+        fragment.append(inlineCode);
       }
 
       cursor = tokenPattern.lastIndex;
